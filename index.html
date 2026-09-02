@@ -59,7 +59,6 @@
             100% { transform: translate(0, 0) rotate(0deg); }
         }
 
-        /* Initial Blank/Click Gate Overlay Screen Styles */
         .enter-overlay {
             position: fixed;
             top: 0;
@@ -225,6 +224,7 @@
             height: 65px;
             box-sizing: border-box;
             cursor: pointer;
+            width: 100%;
         }
 
         .card-link:hover {
@@ -250,11 +250,11 @@
             left: 50%;
             transform: translate(-50%, -30%) scale(0.9);
             width: 100%;
-            max-width: 420px;
+            max-width: 440px;
             background: linear-gradient(145deg, #111116 0%, #1a1a26 100%);
             border: 2px solid #ff2222;
             border-radius: 16px;
-            padding: 30px;
+            padding: 25px;
             box-sizing: border-box;
             z-index: 10;
             opacity: 0;
@@ -288,7 +288,7 @@
             color: #ffffff;
             font-size: 1rem;
             box-sizing: border-box;
-            margin-bottom: 25px;
+            margin-bottom: 15px;
             outline: none;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
@@ -296,6 +296,77 @@
         .panel-input:focus {
             border-color: #ff1111;
             box-shadow: 0 0 10px rgba(255, 17, 17, 0.4);
+        }
+
+        /* Home-screen style button for Sound Panel */
+        .card-link-button {
+            margin-bottom: 20px;
+            height: 55px;
+        }
+
+        .card-link-button .btn-name {
+            font-size: 1.1rem;
+        }
+
+        .songs-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 240px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding-right: 4px;
+        }
+
+        .songs-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .songs-grid::-webkit-scrollbar-thumb {
+            background: #ff1111;
+            border-radius: 3px;
+        }
+
+        .songs-grid::-webkit-scrollbar-track {
+            background: #08080c;
+        }
+
+        .song-card-btn {
+            background: linear-gradient(135deg, #0d0d14 0%, #171724 100%);
+            border: 1px solid #331111;
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .song-card-btn:hover {
+            border-color: #ff1111;
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(255, 10, 10, 0.3);
+            background: linear-gradient(135deg, #181116 0%, #25141e 100%);
+        }
+
+        .song-card-btn.playing {
+            border-color: #ff3333;
+            box-shadow: 0 0 15px rgba(255, 51, 51, 0.5);
+        }
+
+        .song-title-text {
+            font-weight: bold;
+            color: #ff3333;
+            font-size: 0.95rem;
+            word-break: break-all;
+        }
+
+        .song-play-icon {
+            font-size: 0.85rem;
+            color: #888899;
         }
 
         .slider-label-container {
@@ -314,7 +385,7 @@
             border-radius: 3px;
             background: #20202c;
             outline: none;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             display: block;
         }
 
@@ -337,7 +408,7 @@
         .panel-error {
             color: #ff3333;
             font-size: 0.9rem;
-            margin-top: -15px;
+            margin-top: -10px;
             margin-bottom: 15px;
             font-weight: bold;
             display: none;
@@ -437,7 +508,6 @@
 </head>
 <body>
 
-    <!-- Red Pulsing Entry Gating Mask Layer -->
     <div class="enter-overlay" id="landing-gate">
         <div class="enter-text">click to enter...</div>
     </div>
@@ -447,9 +517,8 @@
 
     <div id="cracked-text-container"></div>
 
-    <!-- Main Front Panel Interface (Initially Invisible) -->
     <div class="main-content" id="site-content">
-        <img src="image.png" alt="StripesVR Profile Picture" class="profile-pic">
+        <img src="image.png" alt="StripesVR Profile Picture" class="profile-pic" onerror="this.src='https://placehold.co/150x150/111116/ff1111?text=StripesVR'">
 
         <div class="title-container">
             <div class="typewriter-text" id="typewriter"></div>
@@ -465,10 +534,16 @@
         </div>
     </div>
 
-    <!-- Hidden Control Center Window Menu -->
+    <!-- Hidden Sound Control Panel -->
     <div class="sound-panel" id="audio-panel">
         <div class="panel-title">pick song</div>
-        <input type="text" class="panel-input" id="song-name-input" placeholder="e.g., speedcore.mp3" value="song.mp3">
+        <input type="text" class="panel-input" id="song-name-input" placeholder="e.g., music/song.mp3" value="music/song.mp3">
+
+        <!-- Available Songs Card Button styled like home screen -->
+        <div class="card-link card-link-button" id="trigger-songs-menu">
+            <span class="btn-name">Available Songs</span>
+        </div>
+
         <div class="panel-error" id="song-error-msg">not available</div>
 
         <div class="slider-label-container">
@@ -480,12 +555,19 @@
         <button class="close-panel-btn" id="close-audio-panel">Back</button>
     </div>
 
+    <!-- Hidden Songs List Panel -->
+    <div class="sound-panel" id="github-songs-panel">
+        <div class="panel-title">Available Songs</div>
+
+        <div class="songs-grid" id="github-songs-container">
+            <div style="color: #888899; font-size: 0.9rem; text-align: center; padding: 20px 0;">Loading songs...</div>
+        </div>
+
+        <button class="close-panel-btn" id="close-songs-panel">Back to Controls</button>
+    </div>
+
     <script>
-        // ==========================================
-        // CONFIGURATION OPTIONS
-        // ==========================================
         let currentVolumeSetting = 0.05; 
-        // ==========================================
 
         // Main Title Text Loop Configuration
         const mainTextArray = ["hope you enjoy"];
@@ -643,7 +725,7 @@
         let isPlaying = false;
         const audio = document.getElementById('bg-audio');
         
-        let songUrl = 'song.mp3';
+        let songUrl = 'music/song.mp3';
         let bassHistory = [];
         const historySize = 20; 
         let lastStrikeTime = 0;
@@ -689,9 +771,25 @@
             }
         }
 
+        function playTrack(targetTrack) {
+            songErrorDisplay.style.display = 'none';
+            songUrl = targetTrack;
+            songInput.value = targetTrack;
+
+            audio.src = songUrl;
+            audio.currentTime = 0;
+            audio.volume = currentVolumeSetting;
+            audio.play().then(() => {
+                isPlaying = true;
+            }).catch(e => {
+                console.error("Error playing track:", e);
+                songErrorDisplay.style.display = 'block';
+            });
+        }
+
         function fallbackToDefaultTrack() {
-            songUrl = 'song.mp3';
-            document.getElementById('song-name-input').value = 'song.mp3';
+            songUrl = 'music/song.mp3';
+            document.getElementById('song-name-input').value = 'music/song.mp3';
             audio.src = songUrl;
             audio.volume = currentVolumeSetting;
             audio.currentTime = 7;
@@ -748,9 +846,6 @@
             document.documentElement.style.setProperty('--beat-color-pulse', colorPulse);
         }
 
-        // ==========================================
-        // INTERACTIVE INTERFACE CONTROLLERS
-        // ==========================================
         const landingGate = document.getElementById('landing-gate');
         const triggerSerentrove = document.getElementById('trigger-serentrove');
         const triggerBtn = document.getElementById('trigger-sound-controls');
@@ -762,16 +857,17 @@
         const songInput = document.getElementById('song-name-input');
         const songErrorDisplay = document.getElementById('song-error-msg');
         const crackedTextContainer = document.getElementById('cracked-text-container');
+        
+        const triggerSongsMenuBtn = document.getElementById('trigger-songs-menu');
+        const githubSongsPanel = document.getElementById('github-songs-panel');
+        const closeSongsPanelBtn = document.getElementById('close-songs-panel');
+        const githubSongsContainer = document.getElementById('github-songs-container');
 
         // Master Click To Enter Portal Handler
         landingGate.addEventListener('click', () => {
-            // Hide the red entry text container gracefully
             landingGate.classList.add('hidden');
-            
-            // Fade in and grow main page elements into focal view
             mainContentElement.classList.add('active');
 
-            // Initialize audio context and typewriter engine loops
             setupAndPlayAudio();
             setTimeout(typeMainHeading, 500);
             setTimeout(typeButtonText, 1000);
@@ -838,6 +934,98 @@
             mainContentElement.classList.remove('fade-out');
         });
 
+        // Open GitHub Songs Menu from Sound Panel
+        triggerSongsMenuBtn.addEventListener('click', () => {
+            document.body.classList.add('shake');
+            audioPanelElement.classList.remove('slide-in');
+
+            setTimeout(() => {
+                document.body.classList.remove('shake');
+                githubSongsPanel.classList.add('slide-in');
+                fetchSongsFromJson();
+            }, 300);
+        });
+
+        // Close Songs Panel and Return to Sound Panel
+        closeSongsPanelBtn.addEventListener('click', () => {
+            githubSongsPanel.classList.remove('slide-in');
+            audioPanelElement.classList.add('slide-in');
+        });
+
+        // JSON File Song List Fetcher
+        async function fetchSongsFromJson() {
+            const jsonPath = 'songs.json';
+            githubSongsContainer.innerHTML = `<div style="color:#888899; font-size:0.9rem; text-align:center; padding:20px 0;">Loading songs...</div>`;
+
+            const defaultList = [
+                { name: 'song.mp3', url: 'music/song.mp3' }
+            ];
+
+            try {
+                const res = await fetch(jsonPath);
+                if (!res.ok) {
+                    throw new Error(`Failed to load ${jsonPath} (Status: ${res.status})`);
+                }
+
+                const data = await res.json();
+                let rawList = Array.isArray(data) ? data : (data.songs || data.tracks || []);
+
+                if (!Array.isArray(rawList) || rawList.length === 0) {
+                    throw new Error('No song list found in JSON format');
+                }
+
+                const songList = rawList.map(item => {
+                    if (typeof item === 'string') {
+                        const filename = item.split('/').pop();
+                        return { name: filename, url: item };
+                    } else if (typeof item === 'object' && item !== null) {
+                        const songUrl = item.url || item.path || item.src || '';
+                        const songName = item.name || item.title || songUrl.split('/').pop() || 'Untitled Track';
+                        return { name: songName, url: songUrl };
+                    }
+                    return null;
+                }).filter(Boolean);
+
+                githubSongsContainer.innerHTML = '';
+
+                if (songList.length === 0) {
+                    githubSongsContainer.innerHTML = '<div style="color:#ff3333; font-size:0.9rem; text-align:center; padding:15px 0;">No songs found in JSON. Displaying default track:</div>';
+                    renderSongButtons(defaultList);
+                    return;
+                }
+
+                renderSongButtons(songList);
+
+            } catch (err) {
+                console.warn('JSON fetch error:', err);
+                githubSongsContainer.innerHTML = `<div style="color:#ff3333; font-size:0.85rem; text-align:center; padding:10px 0;">Could not load songs.json. Displaying default track:</div>`;
+                renderSongButtons(defaultList);
+            }
+        }
+
+        function renderSongButtons(songs) {
+            songs.forEach(song => {
+                const btn = document.createElement('div');
+                btn.className = 'song-card-btn';
+                if (songUrl === song.url || songUrl === song.name) {
+                    btn.classList.add('playing');
+                }
+
+                btn.innerHTML = `
+                    <span class="song-title-text">${song.name}</span>
+                    <span class="song-play-icon">▶ PLAY</span>
+                `;
+
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.song-card-btn').forEach(b => b.classList.remove('playing'));
+                    btn.classList.add('playing');
+                    playTrack(song.url);
+                });
+
+                githubSongsContainer.appendChild(btn);
+            });
+        }
+
         // Realtime Volume Tracking Slider Controller
         volumeSlider.addEventListener('input', (e) => {
             const val = e.target.value;
@@ -851,27 +1039,7 @@
             if(e.key === 'Enter') {
                 const targetTrack = songInput.value.trim();
                 if(targetTrack === '') return;
-
-                songErrorDisplay.style.display = 'none';
-                
-                const testAudio = new Audio();
-                testAudio.src = targetTrack;
-                
-                testAudio.addEventListener('canplaythrough', () => {
-                    songUrl = targetTrack;
-                    audio.src = songUrl;
-                    audio.currentTime = 7;
-                    audio.volume = currentVolumeSetting;
-                    audio.play();
-                });
-
-                testAudio.addEventListener('error', () => {
-                    songErrorDisplay.style.display = 'block';
-                    setTimeout(() => {
-                        songErrorDisplay.style.display = 'none';
-                        fallbackToDefaultTrack();
-                    }, 2000);
-                });
+                playTrack(targetTrack);
             }
         });
     </script>
