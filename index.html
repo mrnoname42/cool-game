@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StripesVR Homepage</title>
+    <style>
+        :root {
+            --beat-glow: 0px;
+            --beat-color-pulse: #0d0d11;
+        }
+
+        body {
+            background-color: var(--beat-color-pulse);
+            background-image: radial-gradient(circle at center, rgba(255, 30, 30, 0.15) 0%, transparent 80%);
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 20px;
+            box-sizing: border-box;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        canvas#lightning-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .main-content {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            filter: blur(20px);
+            transition: filter 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+            pointer-events: none;
+            position: relative;
+            z-index: 2;
+        }
+
+        .main-content.active {
+            filter: blur(0px);
+            pointer-events: auto;
+        }
+
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border: 5px solid #ff1111;
+            box-shadow: 0 0 calc(20px + var(--beat-glow)) rgba(255, 10, 10, 0.6);
+            margin-bottom: 20px;
+            border-radius: 50%;
+        }
+
+        .title-container {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .typewriter-text {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 0 0 calc(15px + var(--beat-glow)) rgba(255, 10, 10, 0.8), 
+                         0 0 calc(30px + var(--beat-glow)) rgba(255, 0, 0, 0.5);
+            letter-spacing: 2px;
+            border-right: 3px solid #ff1111;
+            white-space: nowrap;
+            background: transparent;
+            padding-right: 4px;
+            animation: blink 0.75s step-end infinite;
+        }
+
+        .button-typewriter {
+            border-right: 2px solid #ff3333;
+            white-space: nowrap;
+            padding-right: 2px;
+            animation: blinkButtonCursor 0.75s step-end infinite;
+        }
+
+        @keyframes blink {
+            from, to { border-color: transparent }
+            50% { border-color: #ff1111; }
+        }
+
+        @keyframes blinkButtonCursor {
+            from, to { border-color: transparent }
+            50% { border-color: #ff3333; }
+        }
+
+        .links-container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .card-link {
+            background: linear-gradient(135deg, #16161f 0%, #1f1f2e 100%);
+            border: 1px solid #441111;
+            border-radius: 12px;
+            padding: 18px 20px;
+            text-decoration: none;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 10px rgba(255, 10, 10, 0.15), 0 4px 10px rgba(0,0,0,0.3);
+            text-align: center;
+            height: 65px;
+            box-sizing: border-box;
+        }
+
+        .card-link:hover {
+            transform: translateY(-3px);
+            border-color: #ff1111;
+            box-shadow: 0 0 20px rgba(255, 10, 10, 0.4), 0 6px 25px rgba(255, 10, 10, 0.4);
+        }
+
+        .btn-name {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #ff3333;
+            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="lightning-canvas"></canvas>
+    <audio id="bg-audio" crossorigin="anonymous"></audio>
+
+    <div class="main-content active" id="site-content">
+        <img src="image.png" alt="StripesVR Profile Picture" class="profile-pic">
+
+        <div class="title-container">
+            <div class="typewriter-text" id="typewriter"></div>
+        </div>
+
+        <div class="links-container" id="menu-links">
+            <a href="#" class="card-link">
+                <span class="btn-name"><span class="button-typewriter" id="btn-typewriter"></span></span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // CONFIGURATION OPTIONS
+        // ==========================================
+        // Change song volume here (0.0 = Mute, 0.5 = 50% volume, 1.0 = 100% full volume)
+        const DEFAULT_VOLUME = 0.05; 
+        // ==========================================
+
+        // Main Title Text Loop Configuration
+        const mainTextArray = ["hope you enjoy"];
+        let mainTextIndex = 0;
+        let mainCharIndex = 0;
+        let mainIsDeleting = false;
+        const mainTypeSpeed = 150;  
+        const mainEraseSpeed = 100; 
+        const mainDelayBetween = 2500; 
+        const mainTypewriterElement = document.getElementById("typewriter");
+
+        function typeMainHeading() {
+            const currentText = mainTextArray[mainTextIndex];
+            if (mainIsDeleting) {
+                mainTypewriterElement.textContent = currentText.substring(0, mainCharIndex - 1);
+                mainCharIndex--;
+            } else {
+                mainTypewriterElement.textContent = currentText.substring(0, mainCharIndex + 1);
+                mainCharIndex++;
+            }
+
+            let nextActionSpeed = mainIsDeleting ? mainEraseSpeed : mainTypeSpeed;
+
+            if (!mainIsDeleting && mainCharIndex === currentText.length) {
+                nextActionSpeed = mainDelayBetween; 
+                mainIsDeleting = true;
+            } else if (mainIsDeleting && mainCharIndex === 0) {
+                mainIsDeleting = false;
+                nextActionSpeed = 500; 
+            }
+            setTimeout(typeMainHeading, nextActionSpeed);
+        }
+
+        // Button Text Loop Configuration
+        const buttonTextArray = ["Serentrove"];
+        let btnTextIndex = 0;
+        let btnCharIndex = 0;
+        let btnIsDeleting = false;
+        const btnTypeSpeed = 180;  
+        const btnEraseSpeed = 120; 
+        const btnDelayBetween = 3000; 
+        const btnTypewriterElement = document.getElementById("btn-typewriter");
+
+        function typeButtonText() {
+            const currentText = buttonTextArray[btnTextIndex];
+            if (btnIsDeleting) {
+                btnTypewriterElement.textContent = currentText.substring(0, btnCharIndex - 1);
+                btnCharIndex--;
+            } else {
+                btnTypewriterElement.textContent = currentText.substring(0, btnCharIndex + 1);
+                btnCharIndex++;
+            }
+
+            let nextActionSpeed = btnIsDeleting ? btnEraseSpeed : btnTypeSpeed;
+
+            if (!btnIsDeleting && btnCharIndex === currentText.length) {
+                nextActionSpeed = btnDelayBetween; 
+                btnIsDeleting = true;
+            } else if (btnIsDeleting && btnCharIndex === 0) {
+                btnIsDeleting = false;
+                nextActionSpeed = 600; 
+            }
+            setTimeout(typeButtonText, nextActionSpeed);
+        }
+
+        const canvas = document.getElementById('lightning-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let lightningOpacity = 0;
+        let activeStrikes = [];
+
+        function createLightningPath(startX, startY, endY, segments) {
+            let path = [{x: startX, y: startY}];
+            let currentX = startX;
+            let currentY = startY;
+            let segmentHeight = (endY - startY) / segments;
+
+            for (let i = 0; i < segments; i++) {
+                currentY += segmentHeight;
+                let deviation = (Math.random() - 0.5) * 110; 
+                currentX += deviation;
+                path.push({x: currentX, y: currentY});
+            }
+            return path;
+        }
+
+        function drawLightning(path, width, glowSize, color) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.shadowBlur = glowSize;
+            ctx.shadowColor = '#ff0000';
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            ctx.beginPath();
+            ctx.moveTo(path[0].x, path[0].y);
+            for (let i = 1; i < path.length; i++) {
+                ctx.lineTo(path[i].x, path[i].y);
+            }
+            ctx.stroke();
+        }
+
+        function triggerLightningStrike() {
+            activeStrikes = [];
+            let totalStrikes = Math.floor(Math.random() * 3) + 2; 
+
+            for (let i = 0; i < totalStrikes; i++) {
+                let startX = Math.random() * canvas.width;
+                let path = createLightningPath(startX, 0, canvas.height, 10);
+                activeStrikes.push(path);
+            }
+            lightningOpacity = 1.0; 
+        }
+
+        let audioCtx, analyser, dataArray, sourceNode;
+        let isPlaying = false;
+        const audio = document.getElementById('bg-audio');
+        
+        const songUrl = 'song.mp3';
+
+        let bassHistory = [];
+        const historySize = 20; 
+        let lastStrikeTime = 0;
+
+        function setupAndPlayAudio() {
+            try {
+                audio.src = songUrl;
+                audio.loop = true;
+                audio.crossOrigin = "anonymous";
+                audio.volume = DEFAULT_VOLUME;
+
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContextClass();
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 64; 
+                
+                const bufferLength = analyser.frequencyBinCount;
+                dataArray = new Uint8Array(bufferLength);
+
+                sourceNode = audioCtx.createMediaElementSource(audio);
+                sourceNode.connect(analyser);
+                analyser.connect(audioCtx.destination);
+
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                audio.currentTime = 7;
+
+                let playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isPlaying = true;
+                        animateDance();
+                    }).catch(err => {
+                        console.error("Playback failed directly:", err);
+                        audio.src = 'song.mp3';
+                        audio.volume = DEFAULT_VOLUME;
+                        audio.play().then(() => { isPlaying = true; animateDance(); });
+                    });
+                }
+
+            } catch (err) {
+                console.error("Audio initialization glitch:", err);
+            }
+        }
+
+        function animateDance() {
+            requestAnimationFrame(animateDance);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (!isPlaying) return;
+
+            analyser.getByteFrequencyData(dataArray);
+            let bassValue = (dataArray[0] + dataArray[1] + dataArray[2] + dataArray[3]) / 4;
+
+            let sum = 0;
+            for (let i = 0; i < bassHistory.length; i++) {
+                sum += bassHistory[i];
+            }
+            let bassAverage = bassHistory.length > 0 ? sum / bassHistory.length : 120;
+
+            bassHistory.push(bassValue);
+            if (bassHistory.length > historySize) {
+                bassHistory.shift();
+            }
+
+            let currentTime = Date.now();
+            let timeSinceLastStrike = currentTime - lastStrikeTime;
+
+            if ((bassValue > bassAverage * 1.04 && timeSinceLastStrike > 180) || (bassValue >= 240 && timeSinceLastStrike > 320)) {
+                triggerLightningStrike();
+                lastStrikeTime = currentTime;
+            }
+
+            if (lightningOpacity > 0) {
+                ctx.globalAlpha = lightningOpacity;
+                activeStrikes.forEach(path => {
+                    drawLightning(path, 5, 35, '#ff3333');
+                    drawLightning(path, 1.5, 5, '#ffffff');
+                });
+                lightningOpacity *= 0.75; 
+                if (lightningOpacity < 0.01) lightningOpacity = 0;
+            }
+
+            let normalized = bassValue / 255;
+            let glowIntensity = normalized * 50; 
+            let redShift = Math.floor(13 + (lightningOpacity * 35)); 
+            let colorPulse = `rgb(${redShift}, 13, 17)`;
+
+            document.documentElement.style.setProperty('--beat-glow', `${glowIntensity}px`);
+            document.documentElement.style.setProperty('--beat-color-pulse', colorPulse);
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            setTimeout(typeMainHeading, 500);
+            setTimeout(typeButtonText, 1000);
+            
+            window.addEventListener('click', () => {
+                if(!audioCtx) {
+                    setupAndPlayAudio();
+                }
+            }, { once: true });
+        });
+    </script>
+</body>
+</html>
