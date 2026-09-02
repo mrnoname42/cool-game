@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StripesVR Homepage</title>
+    <title>Welcome!</title>
     <style>
         :root {
             --beat-glow: 0px;
@@ -393,7 +393,6 @@
         </div>
 
         <div class="links-container" id="menu-links">
-            <!-- Modified link properties to physically download game.zip -->
             <a href="game.zip" download="game.zip" class="card-link" id="trigger-serentrove" style="text-decoration: none;">
                 <span class="btn-name"><span class="button-typewriter" id="btn-typewriter"></span></span>
             </a>
@@ -511,7 +510,7 @@
 
             let nextActionSpeed = btn2IsDeleting ? btn2EraseSpeed : btn2TypeSpeed;
 
-            if (!btn2IsDeleting && btn22CharIndex === currentText.length) {
+            if (!btn2IsDeleting && btn2CharIndex === currentText.length) {
                 nextActionSpeed = btn2DelayBetween; 
                 btn2IsDeleting = true;
             } else if (btn2IsDeleting && btn2CharIndex === 0) {
@@ -702,13 +701,10 @@
 
         // Serentrove Shattering Drop Animation Engine
         triggerSerentrove.addEventListener('click', (e) => {
-            // Do not use e.preventDefault() so the native download link attribute executes!
             if(!audioCtx) setupAndPlayAudio();
 
-            // Clear any previously existing cracked components safely
             crackedTextContainer.innerHTML = '';
 
-            // Generate structural components for "GOOD CHOICE"
             const wrapper = document.createElement('div');
             wrapper.className = 'cracked-word-wrapper';
             
@@ -721,28 +717,22 @@
             }
             crackedTextContainer.appendChild(wrapper);
 
-            // Animate original background structures shattering downward
             mainContentElement.classList.add('shattered-fall');
 
-            // Force reflow and execute crushing descent
             setTimeout(() => {
                 wrapper.classList.add('impact');
-                // Trigger massive lightning blast and heavy impact camera shake
                 triggerLightningStrike();
                 document.body.classList.add('heavy-shake');
             }, 150);
 
-            // Clean impact shake state filter classes
             setTimeout(() => {
                 document.body.classList.remove('heavy-shake');
             }, 650);
 
-            // Trigger the crumbling sequence into deep gravity physics vectors
             setTimeout(() => {
                 wrapper.classList.add('crumble');
             }, 2000);
 
-            // Cleanly restore page environment state parameters
             setTimeout(() => {
                 crackedTextContainer.innerHTML = '';
                 mainContentElement.classList.remove('shattered-fall');
