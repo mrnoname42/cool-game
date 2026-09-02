@@ -27,6 +27,38 @@
             position: relative;
         }
 
+        body.shake {
+            animation: screenShake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+            perspective: 1000px;
+        }
+
+        body.heavy-shake {
+            animation: heavyImpactShake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes screenShake {
+            10%, 90% { transform: translate3d(-4px, 2px, 0); }
+            20%, 80% { transform: translate3d(6px, -4px, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 6px, 0); }
+            40%, 60% { transform: translate3d(8px, -6px, 0); }
+        }
+
+        @keyframes heavyImpactShake {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            10% { transform: translate(-12px, -8px) rotate(-1.5deg); }
+            20% { transform: translate(14px, 10px) rotate(2deg); }
+            30% { transform: translate(-15px, 5px) rotate(-2.5deg); }
+            40% { transform: translate(12px, -12px) rotate(1.5deg); }
+            50% { transform: translate(-8px, 10px) rotate(-1deg); }
+            60% { transform: translate(10px, -6px) rotate(1deg); }
+            70% { transform: translate(-5px, 4px) rotate(-0.5deg); }
+            80% { transform: translate(6px, -2px) rotate(0.5deg); }
+            90% { transform: translate(-2px, 2px) rotate(0deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
         canvas#lightning-canvas {
             position: fixed;
             top: 0;
@@ -42,16 +74,22 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            filter: blur(20px);
-            transition: filter 1.2s cubic-bezier(0.25, 1, 0.5, 1);
-            pointer-events: none;
+            opacity: 1;
+            transition: filter 1.2s ease, opacity 0.5s ease, transform 0.6s ease;
             position: relative;
             z-index: 2;
         }
 
-        .main-content.active {
-            filter: blur(0px);
-            pointer-events: auto;
+        .main-content.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .main-content.shattered-fall {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(200px) scale(0.9) rotate(3deg);
+            filter: blur(10px);
         }
 
         .profile-pic {
@@ -128,6 +166,7 @@
             text-align: center;
             height: 65px;
             box-sizing: border-box;
+            cursor: pointer;
         }
 
         .card-link:hover {
@@ -146,6 +185,196 @@
             justify-content: center;
             height: 100%;
         }
+
+        .sound-panel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -30%) scale(0.9);
+            width: 100%;
+            max-width: 420px;
+            background: linear-gradient(145deg, #111116 0%, #1a1a26 100%);
+            border: 2px solid #ff2222;
+            border-radius: 16px;
+            padding: 30px;
+            box-sizing: border-box;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            box-shadow: 0 0 35px rgba(255, 10, 10, 0.3);
+            transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+        }
+
+        .sound-panel.slide-in {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #b0b0bc;
+            margin-bottom: 8px;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        .panel-input {
+            width: 100%;
+            background-color: #08080c;
+            border: 1px solid #441111;
+            border-radius: 8px;
+            padding: 12px 14px;
+            color: #ffffff;
+            font-size: 1rem;
+            box-sizing: border-box;
+            margin-bottom: 25px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .panel-input:focus {
+            border-color: #ff1111;
+            box-shadow: 0 0 10px rgba(255, 17, 17, 0.4);
+        }
+
+        .slider-label-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            color: #b0b0bc;
+            font-weight: 500;
+        }
+
+        .volume-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #20202c;
+            outline: none;
+            margin-bottom: 25px;
+            display: block;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #ff1111;
+            cursor: pointer;
+            box-shadow: 0 0 10px #ff0000;
+            transition: transform 0.1s;
+        }
+
+        .volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        .panel-error {
+            color: #ff3333;
+            font-size: 0.9rem;
+            margin-top: -15px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            display: none;
+            text-shadow: 0 0 5px rgba(255, 50, 50, 0.3);
+        }
+
+        .close-panel-btn {
+            background: #20202c;
+            border: 1px solid #3d3d5c;
+            color: #e0e0eb;
+            width: 100%;
+            padding: 12px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .close-panel-btn:hover {
+            background: #272736;
+            border-color: #ff1111;
+            color: #ffffff;
+        }
+
+        #cracked-text-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .cracked-word-wrapper {
+            display: flex;
+            gap: 25px;
+            transform: translateY(-120vh);
+            transition: transform 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045);
+        }
+
+        .cracked-word-wrapper.impact {
+            transform: translateY(0);
+        }
+
+        .cracked-letter-block {
+            position: relative;
+            font-size: 5.5rem;
+            font-weight: 900;
+            color: #ffffff;
+            text-transform: uppercase;
+            font-family: 'Arial Black', Impact, sans-serif;
+            letter-spacing: -2px;
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 0 10px 20px rgba(0,0,0,0.8);
+            -webkit-text-stroke: 2px #ff0000;
+            background: linear-gradient(180deg, #ffffff 30%, #555555 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .cracked-letter-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(45deg, transparent 48%, rgba(255, 0, 0, 0.7) 50%, transparent 52%),
+                linear-gradient(-35deg, transparent 45%, rgba(0, 0, 0, 0.8) 48%, rgba(255,255,255,0.6) 50%, transparent 53%),
+                linear-gradient(115deg, transparent 40%, rgba(255, 0, 0, 0.5) 42%, transparent 45%);
+            background-size: 100% 100%;
+            pointer-events: none;
+            mix-blend-mode: overlay;
+        }
+
+        .cracked-word-wrapper.crumble .cracked-letter-block {
+            transition: transform 1.2s cubic-bezier(0.55, 0.085, 0.68, 0.53), opacity 1s ease;
+            opacity: 0;
+        }
+
+        .cracked-word-wrapper.crumble .cracked-letter-block:nth-child(1) { transform: translate(-80px, 400px) rotate(-45deg); }
+        .cracked-word-wrapper.crumble .cracked-letter-block:nth-child(2) { transform: translate(-30px, 450px) rotate(35deg); }
+        .cracked-word-wrapper.crumble .cracked-letter-block:nth-child(3) { transform: translate(20px, 380px) rotate(-25deg); }
+        .cracked-word-wrapper.crumble .cracked-letter-block:nth-child(4) { transform: translate(-60px, 420px) rotate(50deg); }
+        .cracked-word-wrapper.crumble .cracked-letter-block:nth-child(5) { transform: translate(50px, 470px) rotate(-15deg); }
+        .cracked-word-wrapper.crumble .cracked-letter-block:nth-child(6) { transform: translate(-10px, 390px) rotate(40deg); }
+        .cracked-word-wrapper.crumble .cracked-letter-block:nth-child(7) { transform: translate(70px, 430px) rotate(-55deg); }
+        .cracked-word-wrapper.crumble .cracked-letter-block:nth-child(8) { transform: translate(-40px, 460px) rotate(20deg); }
+        .cracked-word-wrapper.crumble .cracked-letter-block:nth-child(9) { transform: translate(30px, 410px) rotate(-30deg); }
+        .cracked-word-wrapper.crumble .cracked-letter-block:nth-child(10) { transform: translate(90px, 440px) rotate(45deg); }
     </style>
 </head>
 <body>
@@ -153,7 +382,10 @@
     <canvas id="lightning-canvas"></canvas>
     <audio id="bg-audio" crossorigin="anonymous"></audio>
 
-    <div class="main-content active" id="site-content">
+    <div id="cracked-text-container"></div>
+
+    <!-- Main Front Panel Interface -->
+    <div class="main-content" id="site-content">
         <img src="image.png" alt="StripesVR Profile Picture" class="profile-pic">
 
         <div class="title-container">
@@ -161,18 +393,36 @@
         </div>
 
         <div class="links-container" id="menu-links">
-            <a href="#" class="card-link">
+            <!-- Modified link properties to physically download game.zip -->
+            <a href="game.zip" download="game.zip" class="card-link" id="trigger-serentrove" style="text-decoration: none;">
                 <span class="btn-name"><span class="button-typewriter" id="btn-typewriter"></span></span>
             </a>
+            <div class="card-link" id="trigger-sound-controls">
+                <span class="btn-name"><span class="button-typewriter" id="btn-typewriter-2"></span></span>
+            </div>
         </div>
+    </div>
+
+    <!-- Hidden Control Center Window Menu -->
+    <div class="sound-panel" id="audio-panel">
+        <div class="panel-title">pick song</div>
+        <input type="text" class="panel-input" id="song-name-input" placeholder="e.g., speedcore.mp3" value="song.mp3">
+        <div class="panel-error" id="song-error-msg">not available</div>
+
+        <div class="slider-label-container">
+            <span>Volume</span>
+            <span id="volume-pct-display">5%</span>
+        </div>
+        <input type="range" min="0" max="100" value="5" class="volume-slider" id="volume-range-control">
+
+        <button class="close-panel-btn" id="close-audio-panel">Back</button>
     </div>
 
     <script>
         // ==========================================
         // CONFIGURATION OPTIONS
         // ==========================================
-        // Change song volume here (0.0 = Mute, 0.5 = 50% volume, 1.0 = 100% full volume)
-        const DEFAULT_VOLUME = 0.05; 
+        let currentVolumeSetting = 0.05; 
         // ==========================================
 
         // Main Title Text Loop Configuration
@@ -207,7 +457,7 @@
             setTimeout(typeMainHeading, nextActionSpeed);
         }
 
-        // Button Text Loop Configuration
+        // Button 1 Text Loop Configuration (Serentrove)
         const buttonTextArray = ["Serentrove"];
         let btnTextIndex = 0;
         let btnCharIndex = 0;
@@ -237,6 +487,38 @@
                 nextActionSpeed = 600; 
             }
             setTimeout(typeButtonText, nextActionSpeed);
+        }
+
+        // Button 2 Text Loop Configuration (Sound Controls)
+        const button2TextArray = ["Sound Controls"];
+        let btn2TextIndex = 0;
+        let btn2CharIndex = 0;
+        let btn2IsDeleting = false;
+        const btn2TypeSpeed = 180;  
+        const btn2EraseSpeed = 120; 
+        const btn2DelayBetween = 3000; 
+        const btn2TypewriterElement = document.getElementById("btn-typewriter-2");
+
+        function typeButton2Text() {
+            const currentText = button2TextArray[btn2TextIndex];
+            if (btn2IsDeleting) {
+                btn2TypewriterElement.textContent = currentText.substring(0, btn2CharIndex - 1);
+                btn2CharIndex--;
+            } else {
+                btn2TypewriterElement.textContent = currentText.substring(0, btn2CharIndex + 1);
+                btn2CharIndex++;
+            }
+
+            let nextActionSpeed = btn2IsDeleting ? btn2EraseSpeed : btn2TypeSpeed;
+
+            if (!btn2IsDeleting && btn22CharIndex === currentText.length) {
+                nextActionSpeed = btn2DelayBetween; 
+                btn2IsDeleting = true;
+            } else if (btn2IsDeleting && btn2CharIndex === 0) {
+                btn2IsDeleting = false;
+                nextActionSpeed = 600; 
+            }
+            setTimeout(typeButton2Text, nextActionSpeed);
         }
 
         const canvas = document.getElementById('lightning-canvas');
@@ -299,8 +581,7 @@
         let isPlaying = false;
         const audio = document.getElementById('bg-audio');
         
-        const songUrl = 'song.mp3';
-
+        let songUrl = 'song.mp3';
         let bassHistory = [];
         const historySize = 20; 
         let lastStrikeTime = 0;
@@ -310,7 +591,7 @@
                 audio.src = songUrl;
                 audio.loop = true;
                 audio.crossOrigin = "anonymous";
-                audio.volume = DEFAULT_VOLUME;
+                audio.volume = currentVolumeSetting;
 
                 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
                 audioCtx = new AudioContextClass();
@@ -337,15 +618,25 @@
                         animateDance();
                     }).catch(err => {
                         console.error("Playback failed directly:", err);
-                        audio.src = 'song.mp3';
-                        audio.volume = DEFAULT_VOLUME;
-                        audio.play().then(() => { isPlaying = true; animateDance(); });
+                        fallbackToDefaultTrack();
                     });
                 }
 
             } catch (err) {
                 console.error("Audio initialization glitch:", err);
             }
+        }
+
+        function fallbackToDefaultTrack() {
+            songUrl = 'song.mp3';
+            document.getElementById('song-name-input').value = 'song.mp3';
+            audio.src = songUrl;
+            audio.volume = currentVolumeSetting;
+            audio.currentTime = 7;
+            audio.play().then(() => {
+                isPlaying = true;
+                animateDance();
+            }).catch(e => console.error("Fallback track load error:", e));
         }
 
         function animateDance() {
@@ -395,9 +686,130 @@
             document.documentElement.style.setProperty('--beat-color-pulse', colorPulse);
         }
 
+        // ==========================================
+        // INTERACTIVE INTERFACE CONTROLLERS
+        // ==========================================
+        const triggerSerentrove = document.getElementById('trigger-serentrove');
+        const triggerBtn = document.getElementById('trigger-sound-controls');
+        const closePanelBtn = document.getElementById('close-audio-panel');
+        const mainContentElement = document.getElementById('site-content');
+        const audioPanelElement = document.getElementById('audio-panel');
+        const volumeSlider = document.getElementById('volume-range-control');
+        const volumeDisplay = document.getElementById('volume-pct-display');
+        const songInput = document.getElementById('song-name-input');
+        const songErrorDisplay = document.getElementById('song-error-msg');
+        const crackedTextContainer = document.getElementById('cracked-text-container');
+
+        // Serentrove Shattering Drop Animation Engine
+        triggerSerentrove.addEventListener('click', (e) => {
+            // Do not use e.preventDefault() so the native download link attribute executes!
+            if(!audioCtx) setupAndPlayAudio();
+
+            // Clear any previously existing cracked components safely
+            crackedTextContainer.innerHTML = '';
+
+            // Generate structural components for "GOOD CHOICE"
+            const wrapper = document.createElement('div');
+            wrapper.className = 'cracked-word-wrapper';
+            
+            const messageStr = "GOODCHOICE";
+            for (let i = 0; i < messageStr.length; i++) {
+                const span = document.createElement('span');
+                span.className = 'cracked-letter-block';
+                span.textContent = messageStr[i];
+                wrapper.appendChild(span);
+            }
+            crackedTextContainer.appendChild(wrapper);
+
+            // Animate original background structures shattering downward
+            mainContentElement.classList.add('shattered-fall');
+
+            // Force reflow and execute crushing descent
+            setTimeout(() => {
+                wrapper.classList.add('impact');
+                // Trigger massive lightning blast and heavy impact camera shake
+                triggerLightningStrike();
+                document.body.classList.add('heavy-shake');
+            }, 150);
+
+            // Clean impact shake state filter classes
+            setTimeout(() => {
+                document.body.classList.remove('heavy-shake');
+            }, 650);
+
+            // Trigger the crumbling sequence into deep gravity physics vectors
+            setTimeout(() => {
+                wrapper.classList.add('crumble');
+            }, 2000);
+
+            // Cleanly restore page environment state parameters
+            setTimeout(() => {
+                crackedTextContainer.innerHTML = '';
+                mainContentElement.classList.remove('shattered-fall');
+            }, 3300);
+        });
+
+        // Enter Controls Modal Trigger Event
+        triggerBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if(!audioCtx) setupAndPlayAudio();
+
+            document.body.classList.add('shake');
+            mainContentElement.classList.add('fade-out');
+
+            setTimeout(() => {
+                document.body.classList.remove('shake');
+                audioPanelElement.classList.add('slide-in');
+            }, 400);
+        });
+
+        // Exit panel return button layout trigger
+        closePanelBtn.addEventListener('click', () => {
+            audioPanelElement.classList.remove('slide-in');
+            mainContentElement.classList.remove('fade-out');
+        });
+
+        // Realtime Volume Tracking Slider Controller
+        volumeSlider.addEventListener('input', (e) => {
+            const val = e.target.value;
+            volumeDisplay.textContent = `${val}%`;
+            currentVolumeSetting = val / 100;
+            audio.volume = currentVolumeSetting;
+        });
+
+        // Text input dynamic song searching loader mechanism
+        songInput.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter') {
+                const targetTrack = songInput.value.trim();
+                if(targetTrack === '') return;
+
+                songErrorDisplay.style.display = 'none';
+                
+                const testAudio = new Audio();
+                testAudio.src = targetTrack;
+                
+                testAudio.addEventListener('canplaythrough', () => {
+                    songUrl = targetTrack;
+                    audio.src = songUrl;
+                    audio.currentTime = 7;
+                    audio.volume = currentVolumeSetting;
+                    audio.play();
+                });
+
+                testAudio.addEventListener('error', () => {
+                    songErrorDisplay.style.display = 'block';
+                    setTimeout(() => {
+                        songErrorDisplay.style.display = 'none';
+                        fallbackToDefaultTrack();
+                    }, 2000);
+                });
+            }
+        });
+
         document.addEventListener("DOMContentLoaded", function() {
             setTimeout(typeMainHeading, 500);
             setTimeout(typeButtonText, 1000);
+            setTimeout(typeButton2Text, 1500);
             
             window.addEventListener('click', () => {
                 if(!audioCtx) {
