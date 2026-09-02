@@ -11,7 +11,7 @@
         }
 
         body {
-            background-color: var(--beat-color-pulse);
+            background-color: #0d0d11;
             background-image: radial-gradient(circle at center, rgba(255, 30, 30, 0.15) 0%, transparent 80%);
             color: #ffffff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -59,6 +59,54 @@
             100% { transform: translate(0, 0) rotate(0deg); }
         }
 
+        /* Initial Blank/Click Gate Overlay Screen Styles */
+        .enter-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #050507;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            cursor: pointer;
+            transition: opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.8s;
+        }
+
+        .enter-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .enter-text {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #ff2222;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            font-family: 'Arial Black', Impact, sans-serif;
+            text-shadow: 0 0 15px rgba(255, 10, 10, 0.8), 
+                         0 0 30px rgba(255, 0, 0, 0.4);
+            animation: pulseAndGrow 2.5s infinite ease-in-out;
+            user-select: none;
+        }
+
+        @keyframes pulseAndGrow {
+            0%, 100% { 
+                transform: scale(0.92); 
+                opacity: 0.3; 
+                filter: drop-shadow(0 0 5px rgba(255,0,0,0.2));
+            }
+            50% { 
+                transform: scale(1.08); 
+                opacity: 1; 
+                filter: drop-shadow(0 0 25px rgba(255,0,0,0.8));
+            }
+        }
+
         canvas#lightning-canvas {
             position: fixed;
             top: 0;
@@ -74,10 +122,20 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            opacity: 1;
-            transition: filter 1.2s ease, opacity 0.5s ease, transform 0.6s ease;
+            opacity: 0;
+            filter: blur(15px);
+            transform: scale(0.95);
+            transition: filter 1.2s ease, opacity 0.8s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
             z-index: 2;
+            pointer-events: none;
+        }
+
+        .main-content.active {
+            opacity: 1;
+            filter: blur(0px);
+            transform: scale(1);
+            pointer-events: auto;
         }
 
         .main-content.fade-out {
@@ -379,12 +437,17 @@
 </head>
 <body>
 
+    <!-- Red Pulsing Entry Gating Mask Layer -->
+    <div class="enter-overlay" id="landing-gate">
+        <div class="enter-text">click to enter...</div>
+    </div>
+
     <canvas id="lightning-canvas"></canvas>
     <audio id="bg-audio" crossorigin="anonymous"></audio>
 
     <div id="cracked-text-container"></div>
 
-    <!-- Main Front Panel Interface -->
+    <!-- Main Front Panel Interface (Initially Invisible) -->
     <div class="main-content" id="site-content">
         <img src="image.png" alt="StripesVR Profile Picture" class="profile-pic">
 
@@ -688,6 +751,7 @@
         // ==========================================
         // INTERACTIVE INTERFACE CONTROLLERS
         // ==========================================
+        const landingGate = document.getElementById('landing-gate');
         const triggerSerentrove = document.getElementById('trigger-serentrove');
         const triggerBtn = document.getElementById('trigger-sound-controls');
         const closePanelBtn = document.getElementById('close-audio-panel');
@@ -698,6 +762,21 @@
         const songInput = document.getElementById('song-name-input');
         const songErrorDisplay = document.getElementById('song-error-msg');
         const crackedTextContainer = document.getElementById('cracked-text-container');
+
+        // Master Click To Enter Portal Handler
+        landingGate.addEventListener('click', () => {
+            // Hide the red entry text container gracefully
+            landingGate.classList.add('hidden');
+            
+            // Fade in and grow main page elements into focal view
+            mainContentElement.classList.add('active');
+
+            // Initialize audio context and typewriter engine loops
+            setupAndPlayAudio();
+            setTimeout(typeMainHeading, 500);
+            setTimeout(typeButtonText, 1000);
+            setTimeout(typeButton2Text, 1500);
+        });
 
         // Serentrove Shattering Drop Animation Engine
         triggerSerentrove.addEventListener('click', (e) => {
@@ -794,18 +873,6 @@
                     }, 2000);
                 });
             }
-        });
-
-        document.addEventListener("DOMContentLoaded", function() {
-            setTimeout(typeMainHeading, 500);
-            setTimeout(typeButtonText, 1000);
-            setTimeout(typeButton2Text, 1500);
-            
-            window.addEventListener('click', () => {
-                if(!audioCtx) {
-                    setupAndPlayAudio();
-                }
-            }, { once: true });
         });
     </script>
 </body>
