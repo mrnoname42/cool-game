@@ -1,4 +1,4 @@
 [
   { "name": "random", "url": "music/song.mp3" },
-  { "name": "Chill Vibe", "url": "music/track2.mp3" }
+  { "name": "none", "url": "no music" }
 ]
