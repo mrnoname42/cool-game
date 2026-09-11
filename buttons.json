@@ -1,1 +1,13 @@
-
+{
+"id": "trigger-serentrove",
+"name": "Serentrove",
+"url": "game.zip",
+"download": "game.zip",
+"action": "serentrove"
+},
+{
+"id": "trigger-tower-defense",
+"name": "Tower Defense",
+"url": "bubble_siege_3d.html",
+"download": "bubble_siege_3d.html"
+}
