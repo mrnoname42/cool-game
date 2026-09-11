@@ -894,75 +894,97 @@
 
         // Dynamic Buttons Loader from buttons.json
         async function loadDynamicButtons() {
+            const fallbackButtons = [
+                {
+                    "id": "trigger-serentrove",
+                    "name": "Serentrove",
+                    "url": "game.zip",
+                    "download": "game.zip",
+                    "action": "serentrove"
+                },
+                {
+                    "id": "trigger-tower-defense",
+                    "name": "Tower Defense",
+                    "url": "bubble_siege_3d.html",
+                    "download": "bubble_siege_3d.html"
+                }
+            ];
+
             try {
                 const response = await fetch('buttons.json');
+                if (!response.ok) throw new Error('Network response not ok');
                 const buttons = await response.json();
-                const wrapper = document.getElementById('dynamic-buttons-wrapper');
-                wrapper.innerHTML = '';
-
-                buttons.forEach(btnData => {
-                    const a = document.createElement('a');
-                    a.href = btnData.url;
-                    if (btnData.download) a.download = btnData.download;
-                    a.className = 'card-link';
-                    if (btnData.id) a.id = btnData.id;
-                    a.style.textDecoration = 'none';
-
-                    a.innerHTML = `<span class="btn-name">${btnData.name}</span>`;
-                    wrapper.appendChild(a);
-
-                    if (btnData.action === 'serentrove') {
-                        a.addEventListener('click', (e) => {
-                            if(!audioCtx) setupAndPlayAudio();
-
-                            crackedTextContainer.innerHTML = '';
-
-                            const wrapperDiv = document.createElement('div');
-                            wrapperDiv.className = 'cracked-word-wrapper';
-                            
-                            const messageStr = "GOODCHOICE";
-                            for (let i = 0; i < messageStr.length; i++) {
-                                const span = document.createElement('span');
-                                span.className = 'cracked-letter-block';
-                                span.textContent = messageStr[i];
-                                wrapperDiv.appendChild(span);
-                            }
-                            crackedTextContainer.appendChild(wrapperDiv);
-
-                            mainContentElement.classList.add('shattered-fall');
-
-                            setTimeout(() => {
-                                wrapperDiv.classList.add('impact');
-                                triggerLightningStrike();
-                                document.body.classList.add('heavy-shake');
-                            }, 150);
-
-                            setTimeout(() => {
-                                document.body.classList.remove('heavy-shake');
-                            }, 650);
-
-                            setTimeout(() => {
-                                wrapperDiv.classList.add('crumble');
-                            }, 2000);
-
-                            setTimeout(() => {
-                                crackedTextContainer.innerHTML = '';
-                                mainContentElement.classList.remove('shattered-fall');
-                            }, 3300);
-                        });
-                    } else {
-                        a.addEventListener('click', () => {
-                            if(!audioCtx) setupAndPlayAudio();
-                            document.body.classList.add('shake');
-                            setTimeout(() => {
-                                document.body.classList.remove('shake');
-                            }, 400);
-                        });
-                    }
-                });
+                renderButtons(buttons);
             } catch (e) {
-                console.error('Error loading buttons.json:', e);
+                console.warn('Could not fetch buttons.json (likely due to file:// CORS policy). Using fallback buttons:', e);
+                renderButtons(fallbackButtons);
             }
+        }
+
+        function renderButtons(buttons) {
+            const wrapper = document.getElementById('dynamic-buttons-wrapper');
+            wrapper.innerHTML = '';
+
+            buttons.forEach(btnData => {
+                const a = document.createElement('a');
+                a.href = btnData.url;
+                if (btnData.download) a.download = btnData.download;
+                a.className = 'card-link';
+                if (btnData.id) a.id = btnData.id;
+                a.style.textDecoration = 'none';
+
+                a.innerHTML = `<span class="btn-name">${btnData.name}</span>`;
+                wrapper.appendChild(a);
+
+                if (btnData.action === 'serentrove') {
+                    a.addEventListener('click', (e) => {
+                        if(!audioCtx) setupAndPlayAudio();
+
+                        crackedTextContainer.innerHTML = '';
+
+                        const wrapperDiv = document.createElement('div');
+                        wrapperDiv.className = 'cracked-word-wrapper';
+                        
+                        const messageStr = "GOODCHOICE";
+                        for (let i = 0; i < messageStr.length; i++) {
+                            const span = document.createElement('span');
+                            span.className = 'cracked-letter-block';
+                            span.textContent = messageStr[i];
+                            wrapperDiv.appendChild(span);
+                        }
+                        crackedTextContainer.appendChild(wrapperDiv);
+
+                        mainContentElement.classList.add('shattered-fall');
+
+                        setTimeout(() => {
+                            wrapperDiv.classList.add('impact');
+                            triggerLightningStrike();
+                            document.body.classList.add('heavy-shake');
+                        }, 150);
+
+                        setTimeout(() => {
+                            document.body.classList.remove('heavy-shake');
+                        }, 650);
+
+                        setTimeout(() => {
+                            wrapperDiv.classList.add('crumble');
+                        }, 2000);
+
+                        setTimeout(() => {
+                            crackedTextContainer.innerHTML = '';
+                            mainContentElement.classList.remove('shattered-fall');
+                        }, 3300);
+                    });
+                } else {
+                    a.addEventListener('click', () => {
+                        if(!audioCtx) setupAndPlayAudio();
+                        document.body.classList.add('shake');
+                        setTimeout(() => {
+                            document.body.classList.remove('shake');
+                        }, 400);
+                    });
+                }
+            });
         }
 
         // Master Click To Enter Portal Handler
