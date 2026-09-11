@@ -10,4 +10,10 @@
 "name": "Tower Defense",
 "url": "bubble_siege_3d.html",
 "download": "bubble_siege_3d.html"
+},
+{
+"id": "trigger-test",
+"name": "test",
+"url": "test.html",
+"download": "test.html"
 }
